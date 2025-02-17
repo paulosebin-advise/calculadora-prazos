@@ -1,0 +1,69 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { format, addBusinessDays, parse } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+export default function CalculadoraPrazos() {
+  const [materia, setMateria] = useState("");
+  const [estado, setEstado] = useState("");
+  const [dataPublicacao, setDataPublicacao] = useState("");
+  const [prazo, setPrazo] = useState("");
+  const [resultado, setResultado] = useState(null);
+
+  const estadosBrasil = [
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+  ];
+
+  const calcularPrazoFinal = () => {
+    if (!dataPublicacao || !prazo) return;
+    const dataInicial = parse(dataPublicacao, "yyyy-MM-dd", new Date());
+    const dataInicio = addBusinessDays(dataInicial, 1);
+    const dataFinal = addBusinessDays(dataInicio, Number(prazo));
+    setResultado(format(dataFinal, "dd/MM/yyyy", { locale: ptBR }));
+  };
+
+  return (
+    <div className="flex flex-col items-center p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Calculadora de Prazos Processuais</h1>
+      <Card className="w-full max-w-md p-4 space-y-4">
+        <CardContent className="space-y-4">
+          <Select onValueChange={setMateria}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione a Matéria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="civel">Cível</SelectItem>
+              <SelectItem value="penal">Penal</SelectItem>
+              <SelectItem value="trabalhista">Trabalhista</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select onValueChange={setEstado}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              {estadosBrasil.map((uf) => (
+                <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Input type="date" onChange={(e) => setDataPublicacao(e.target.value)} placeholder="Data da Publicação" />
+          <Input type="number" onChange={(e) => setPrazo(e.target.value)} placeholder="Prazo (dias úteis)" />
+          <Button onClick={calcularPrazoFinal} className="w-full">Calcular Prazo</Button>
+
+          {resultado && (
+            <div className="text-center text-lg font-semibold mt-4">
+              Prazo final: {resultado}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <footer className="text-sm text-gray-500">Desenvolvido por: Paulo Sebin</footer>
+    </div>
+  );
+}
